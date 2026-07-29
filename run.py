@@ -8,7 +8,7 @@ from scanner.untrusted import UntrustedDataLoader
 from scanner.loader import YAMLLoader
 from scanner.detector import VulnerabilityDetector
 from scanner.patcher import PatchGenerator
-from scanner.llm_client import OpenRouterClient, DEFAULT_API_KEY, DEFAULT_MODEL
+from scanner.llm_client import OpenRouterClient, DEFAULT_MODEL
 
 def main():
     parser = argparse.ArgumentParser(description="GSC26 Challenge 2 - Automated Vulnerability Detector & Patcher")
@@ -18,7 +18,7 @@ def main():
     parser.add_argument("--input-csv", type=str, default=None, help="Input CSV path (defaults to {data_dir}/{split}.csv)")
     parser.add_argument("--output-csv", type=str, default=None, help="Output CSV path (defaults to test.csv if split is test, or {split}_pred.csv)")
     parser.add_argument("--patches-dir", type=str, default=None, help="Directory to save .patch files")
-    parser.add_argument("--api-key", type=str, default=DEFAULT_API_KEY, help="OpenRouter API Key for LLM patch explanation")
+    parser.add_argument("--api-key", type=str, default=None, help="OpenRouter API Key (reads from OPENROUTER_API_KEY environment variable if omitted)")
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL, help="OpenRouter LLM model identifier")
 
     args = parser.parse_args()
@@ -39,9 +39,9 @@ def main():
     patches_dir = Path(args.patches_dir) if args.patches_dir else Path("patches")
     patches_dir.mkdir(parents=True, exist_ok=True)
 
-    # Initialize OpenRouter LLM client with Team API Key
-    llm_key = args.api_key or os.getenv("OPENROUTER_API_KEY", DEFAULT_API_KEY)
-    llm_client = OpenRouterClient(api_key=llm_key, model=args.model)
+    # Initialize OpenRouter LLM client securely via env or argument
+    llm_key = args.api_key or os.getenv("OPENROUTER_API_KEY")
+    llm_client = OpenRouterClient(api_key=llm_key, model=args.model) if llm_key else None
 
     print(f"[*] Initializing Q-Suyo-Guard Scanner...")
     print(f"    - Split: {split}")
@@ -51,7 +51,7 @@ def main():
     print(f"    - Output CSV: {output_csv_path}")
     print(f"    - Patches Dir: {patches_dir}")
     print(f"    - OpenRouter Model: {args.model}")
-    print(f"    - OpenRouter API Key: {'Configured' if llm_key else 'None'}")
+    print(f"    - OpenRouter API Key: {'Set (Active)' if llm_key else 'Not Set (Using Deterministic Mode)'}")
 
     untrusted_loader = UntrustedDataLoader(untrusted_csv_path)
     yaml_loader = YAMLLoader(base_dir)

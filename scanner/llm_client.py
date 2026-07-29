@@ -3,16 +3,15 @@ import json
 import urllib.request
 import urllib.error
 
-DEFAULT_API_KEY = "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"
 DEFAULT_MODEL = "anthropic/claude-3.5-sonnet"
 
 class OpenRouterClient:
     """
     OpenRouter API Client for Challenge 2 LLM Integration.
-    Uses standard urllib to avoid external network dependencies.
+    Reads API key securely from environment variable OPENROUTER_API_KEY or CLI argument.
     """
     def __init__(self, api_key: str = None, model: str = DEFAULT_MODEL):
-        self.api_key = api_key or os.getenv("OPENROUTER_API_KEY", DEFAULT_API_KEY)
+        self.api_key = api_key or os.getenv("OPENROUTER_API_KEY")
         self.model = model
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
 

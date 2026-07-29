@@ -177,12 +177,12 @@ def build_pdf(filename="submission.pdf"):
     ))
 
     # Section 4: OpenRouter API & LLM Configuration
-    story.append(Paragraph("4. OpenRouter API & LLM Configuration", h1_style))
+    story.append(Paragraph("4. OpenRouter API & Secure LLM Configuration", h1_style))
     story.append(Paragraph(
-        "In strict compliance with the organizer specifications:<br/>"
+        "In strict compliance with organizer security specifications:<br/>"
         "• <b>Gateway Endpoint:</b> <code>https://openrouter.ai/api/v1/chat/completions</code><br/>"
         "• <b>Official Model Identifier:</b> <code>anthropic/claude-3.5-sonnet</code><br/>"
-        "• <b>Team API Key Configured:</b> <code>sk-or-v1-aaf1fc3...b71</code> (Passed via CLI or <code>OPENROUTER_API_KEY</code> environment variable)<br/>"
+        "• <b>Secure Key Management:</b> Configured dynamically via environment variable <code>OPENROUTER_API_KEY</code> or CLI parameter <code>--api-key</code> (no plaintext key exposure in repository code).<br/>"
         "• <b>Role:</b> Generates precise natural-language explanations of remediated vulnerabilities within the generated patch metadata.",
         body_style
     ))

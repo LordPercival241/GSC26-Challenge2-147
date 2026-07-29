@@ -18,7 +18,8 @@ GSC26-Challenge2-147/
 │   ├── untrusted.py        # Untrusted input loader & wildcard pattern matching engine
 │   ├── loader.py           # Dependency resolver for uses: SHA paths (actions & reusable workflows)
 │   ├── detector.py         # Static taint tracking & line-accurate sink detection
-│   └── patcher.py          # Unified diff (.patch) generator applying canonical env-var pattern
+│   ├── patcher.py          # Unified diff (.patch) generator applying canonical env-var pattern
+│   └── llm_client.py       # Secure OpenRouter API Client for LLM patch explanation
 ├── run.py                  # Main execution entrypoint (generates test.csv & patches/)
 ├── evaluate.py             # Evaluation module (Precision, Recall, F1-Score)
 ├── generate_submission_pdf.py # Technical report generator (compiles submission.pdf)
@@ -68,7 +69,16 @@ Requires Python 3.10 or higher. Install all pinned dependencies:
 pip install -r requirements.txt
 ```
 
-### 2. Running Automated Vulnerability Detection & Patch Generation
+### 2. Setting the OpenRouter API Key (Secure Configuration)
+Set your team's issued OpenRouter API key as an environment variable:
+```bash
+export OPENROUTER_API_KEY="sk-or-v1-your-team-key-here"
+```
+*(On Windows PowerShell: `$env:OPENROUTER_API_KEY="sk-or-v1-your-team-key-here"`)*
+
+Alternatively, pass the key via CLI argument: `--api-key "sk-or-v1-your-team-key-here"`.
+
+### 3. Running Automated Vulnerability Detection & Patch Generation
 To process samples (e.g., test or validation set) and generate `test.csv` and the `patches/` directory:
 ```bash
 # General usage for hidden test evaluation
@@ -78,13 +88,13 @@ python run.py --data-dir ../ --split test --output-csv test.csv --patches-dir pa
 python run.py --data-dir ../ --split train --input-csv ../train.csv --output-csv train_pred.csv
 ```
 
-### 3. Evaluating Metrics
+### 4. Evaluating Metrics
 To evaluate precision, recall, and F1-score against ground truth:
 ```bash
 python evaluate.py --predictions train_pred.csv --ground-truth ../train.csv
 ```
 
-### 4. Regenerating Technical Report PDF (`submission.pdf`)
+### 5. Regenerating Technical Report PDF (`submission.pdf`)
 To recompile the official technical submission report PDF:
 ```bash
 python generate_submission_pdf.py
@@ -95,11 +105,10 @@ python generate_submission_pdf.py
 ## LLM & OpenRouter API Disclosure
 
 In compliance with competition guidelines:
-- **Primary Pipeline:** Our core detection and patch generation engine operates as a zero-latency, 100% deterministic static analysis & taint tracking system for absolute reproducibility.
-- **LLM Integration Gateway:** OpenRouter API (`https://openrouter.ai/api/v1`).
-- **Model Identifier:** `anthropic/claude-3.5-sonnet` (or `anthropic/claude-3.5-haiku` for lightweight explanations).
-- **Environment Variable:** `OPENROUTER_API_KEY`.
-- **Usage:** Optional enhancement for generating detailed natural-language explanations in patch metadata.
+- **Gateway Endpoint:** `https://openrouter.ai/api/v1/chat/completions`
+- **Official Model Identifier:** `anthropic/claude-3.5-sonnet`
+- **Secure Key Management:** Loaded securely at runtime from environment variable `OPENROUTER_API_KEY` or `--api-key` flag (preventing plaintext secret exposure in public source code repositories).
+- **Function:** Enriches technical patch explanations (`explanation` field) inside generated patch metadata. If no key is set, the engine operates in 100% offline deterministic fallback mode.
 
 ---
 
