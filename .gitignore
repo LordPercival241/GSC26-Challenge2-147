@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+test.csv
+patches/
+.DS_Store
