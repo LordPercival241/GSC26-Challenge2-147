@@ -1,13 +1,15 @@
 import difflib
 import re
 from pathlib import Path
+from .llm_client import OpenRouterClient
 
 class PatchGenerator:
-    def __init__(self):
+    def __init__(self, llm_client: OpenRouterClient = None):
         self.expr_pattern = re.compile(r"\$\{\{\s*(.*?)\s*\}\}")
+        self.llm_client = llm_client
 
     def sanitize_var_name(self, expr: str) -> str:
-        """Convierte una expresión como github.head_ref en un nombre válido de variable de entorno."""
+        """Converts an expression like github.head_ref into a valid environment variable name."""
         clean = expr.replace("github.", "").replace("event.", "").replace("pull_request.", "").replace(".", "_")
         clean = re.sub(r"[^a-zA-Z0-9_]", "", clean).upper()
         return clean or "UNTRUSTED_VAR"
@@ -22,7 +24,7 @@ class PatchGenerator:
         modified_lines = list(original_lines)
         added_envs = {}
 
-        # Generar cambios en el contenido del archivo YAML
+        # Apply transformations to the YAML line content
         for vuln in vulns:
             to_parts = vuln["to"].split(":")
             if len(to_parts) < 2:
@@ -39,11 +41,11 @@ class PatchGenerator:
                 var_name = self.sanitize_var_name(expr)
                 env_expr = f"${{{{ {expr} }}}}"
                 
-                # Sustituir la expresión directa por la variable entre comillas "$VAR"
+                # Replace inline direct context interpolation with quoted shell var reference
                 modified_lines[line_idx] = modified_lines[line_idx].replace(env_expr, f'"${var_name}"')
                 added_envs[var_name] = env_expr
 
-        # Crear el parche en formato diff unificado
+        # Create unified diff (.patch file)
         diff = difflib.unified_diff(
             original_lines,
             modified_lines,
@@ -58,9 +60,19 @@ class PatchGenerator:
             with open(output_patch_path, "w", encoding="utf-8") as f:
                 f.write(patch_content)
 
+            default_exp = (
+                "Sanitized untrusted context expression by moving it into step-level env var "
+                "and referencing it as a quoted shell variable ($VAR), preventing command injection."
+            )
+
+            explanation = default_exp
+            if self.llm_client:
+                vuln_summary = "; ".join([v.get("explanation", "") for v in vulns])
+                explanation = self.llm_client.explain_patch(vuln_summary, patch_content)
+
             return {
                 "file": str(file_path),
                 "patch_file": str(output_patch_path),
-                "explanation": "La expresión no confiable se movió a una variable de entorno `env:` y se accedió como variable de shell entre comillas."
+                "explanation": explanation
             }
         return None

@@ -20,14 +20,12 @@ def build_pdf(filename="submission.pdf"):
 
     styles = getSampleStyleSheet()
 
-    # Custom Color Palette
     primary_color = colors.HexColor("#0C2C4E")    # Deep Navy
     secondary_color = colors.HexColor("#F9A200")  # IEEE Gold/Orange
     dark_neutral = colors.HexColor("#1E293B")     # Slate 800
     light_bg = colors.HexColor("#F8FAFC")         # Slate 50
     border_color = colors.HexColor("#CBD5E1")     # Slate 300
 
-    # Custom Typography Styles
     title_style = ParagraphStyle(
         'DocTitle',
         parent=styles['Heading1'],
@@ -59,17 +57,6 @@ def build_pdf(filename="submission.pdf"):
         textColor=primary_color,
         spaceBefore=14,
         spaceAfter=6
-    )
-
-    h2_style = ParagraphStyle(
-        'Heading2_Custom',
-        parent=styles['Heading3'],
-        fontName='Helvetica-Bold',
-        fontSize=11,
-        leading=15,
-        textColor=dark_neutral,
-        spaceBefore=10,
-        spaceAfter=4
     )
 
     body_style = ParagraphStyle(
@@ -106,7 +93,7 @@ def build_pdf(filename="submission.pdf"):
     # Metadata Box Table
     meta_data = [
         [Paragraph("<b>Team ID:</b> 147", body_style), Paragraph("<b>Target Track:</b> Challenge 2 (GitHub Actions Security)", body_style)],
-        [Paragraph("<b>Members:</b> Dante Aliguere Olivas Huamán & Lely Nicole Fernández Risco", body_style), Paragraph("<b>Model/LLM Config:</b> Hybrid Static Taint Engine + OpenRouter API", body_style)]
+        [Paragraph("<b>Members:</b> Dante Aliguere Olivas Huamán & Lely Nicole Fernández Risco", body_style), Paragraph("<b>OpenRouter Model:</b> <code>anthropic/claude-3.5-sonnet</code>", body_style)]
     ]
     t_meta = Table(meta_data, colWidths=[250, 254])
     t_meta.setStyle(TableStyle([
@@ -125,7 +112,8 @@ def build_pdf(filename="submission.pdf"):
         "However, unsafe handling of untrusted context variables (e.g., <code>github.head_ref</code>, "
         "<code>github.event.issue.title</code>) in unquoted <code>run:</code> shell steps introduces severe "
         "Command Injection vulnerabilities. Our solution (<b>Q-Suyo-Guard</b>) provides a fully automated, "
-        "deterministic static analysis and taint-tracking pipeline coupled with an automated patch generation engine.",
+        "deterministic static analysis and taint-tracking pipeline coupled with an automated patch generation engine "
+        "integrated with OpenRouter API for LLM-assisted patch explanations.",
         body_style
     ))
     story.append(Paragraph(
@@ -188,14 +176,14 @@ def build_pdf(filename="submission.pdf"):
         body_style
     ))
 
-    # Section 4: AI & LLM Tools Disclosure
-    story.append(Paragraph("4. OpenRouter API & Tooling Disclosure", h1_style))
+    # Section 4: OpenRouter API & LLM Configuration
+    story.append(Paragraph("4. OpenRouter API & LLM Configuration", h1_style))
     story.append(Paragraph(
-        "In accordance with competition rules, our primary core detection and patching logic runs deterministically offline for maximum speed and reproducibility. "
-        "For natural-language patch explanation enhancement, our architecture supports OpenRouter API integration.<br/>"
-        "• <b>Provider / Gateway:</b> OpenRouter (<code>https://openrouter.ai/api/v1</code>)<br/>"
-        "• <b>Model Identifier:</b> <code>anthropic/claude-3.5-sonnet</code><br/>"
-        "• <b>Configuration:</b> Set via environment variable <code>OPENROUTER_API_KEY</code>.",
+        "In strict compliance with the organizer specifications:<br/>"
+        "• <b>Gateway Endpoint:</b> <code>https://openrouter.ai/api/v1/chat/completions</code><br/>"
+        "• <b>Official Model Identifier:</b> <code>anthropic/claude-3.5-sonnet</code><br/>"
+        "• <b>Team API Key Configured:</b> <code>sk-or-v1-aaf1fc3...b71</code> (Passed via CLI or <code>OPENROUTER_API_KEY</code> environment variable)<br/>"
+        "• <b>Role:</b> Generates precise natural-language explanations of remediated vulnerabilities within the generated patch metadata.",
         body_style
     ))
 
