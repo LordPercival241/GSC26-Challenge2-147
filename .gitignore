@@ -2,5 +2,6 @@ __pycache__/
 *.pyc
 .venv/
 test.csv
+*_pred.csv
 patches/
 .DS_Store
